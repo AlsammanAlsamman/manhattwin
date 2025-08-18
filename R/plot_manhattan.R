@@ -4,7 +4,6 @@
 #'
 #' @import data.table
 #' @import ggplot2
-#' @import dplyr
 #' @import ggrepel
 #' @import scales
 #' @import stringr
@@ -42,7 +41,7 @@
 #' \dontrun{
 #' # Example usage
 #' data(gwas_results)
-#' manplot(
+#' plot_manhattan(
 #'   gwas_data = gwas_results,
 #'   chr_col = "chr",
 #'   bp_col = "pos",
@@ -54,8 +53,8 @@
 #'   file_name_prefix = "trait_manhattan"
 #' )
 #' }
-
-manplot <- function(gwas_data,
+#'
+plot_manhattan <- function(gwas_data,
                     chr_col = "chr",
                     bp_col = "pos",
                     p_col,

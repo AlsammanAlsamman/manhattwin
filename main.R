@@ -1,11 +1,11 @@
 # Generate test data
-gwas_data <- generate_random_gwas_data(n_snps = 10000, seed = 123)
+gwas_data <- generate_gwas_data_for_plot(n_snps = 10000, seed = 123)
 
 # Check the structure
 str(gwas_data)
 
 # Test with the Manhattan plot function
-manplot(
+plot_manhattan(
   gwas_data = gwas_data,
   chr_col = "CHR",
   bp_col = "BP",
