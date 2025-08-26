@@ -34,7 +34,7 @@
 #' @param output_folder Folder to save output plots.
 #' @param file_name_prefix Prefix for output file names (PNG and PDF).
 #' @param font_family Font family to use for the plot (default: "Arial Unicode MS" which supports lambda symbol).
-#'
+#' @export
 #' @return Invisibly returns NULL. The function saves a PNG and a PDF file of the Manhattan plot and prints a summary message.
 #'
 #' @examples

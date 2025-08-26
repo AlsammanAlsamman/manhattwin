@@ -18,3 +18,5 @@ RoxygenNote: 7.3.2
 Imports:
     ggplot2,
     dplyr
+Depends: 
+    R (>= 3.5)

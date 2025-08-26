@@ -17,12 +17,23 @@ plot_manhattan(
   file_name_prefix = "test_gwas"
 )
 
-create_inverted_manhattan_pair(gwas_data, gwas_data,
+colnames(gwasdataseta)<-c("CHR","BP","P","GENE")
+
+
+
+source("R/new_cluster_snps.R")
+head(gwasdataseta)
+#renv::install("igraph")
+library(igraph)
+clusterSNPs<-cluster_snps(data = gwasdataseta, rsid_col ="rsid" ,chr_col = "CHR", pos_col = "BP",pvalue_col = "P", pvalue_threshold = 5E-5,distance_threshold = 300000 )
+
+head(clusterSNPs)
+create_inverted_manhattan_pair(clusterSNPs, clusterSNPs,
                                            chr_col = "CHR",
                                            bp_col = "BP",
                                            p_col = "P",
                                            gene_col = "GENE",
-                                           group_col = NULL,
+                                           group_col = "cluster",
                                            loci_to_label = NULL,
                                            genes_to_label = NULL,
                                            custom_gene_colors = NULL,
@@ -43,3 +54,37 @@ create_inverted_manhattan_pair(gwas_data, gwas_data,
                                            output_folder = "Inverted_Manhattan_Plots",
                                            file_name_prefix = "inverted_manhattan",
                                            font_family = "Arial Unicode MS")
+
+
+## Read GWAS dataset from sampledata/gwasdataseta.txt and add to package data
+gwasdataseta <- read.table("sampledata/gwasdataseta.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+# the chr should be character
+gwasdataseta$chr <- as.character(gwasdataseta$chr)
+# add random gene names for each 10000 for each SNP
+gwasdataseta$gene <- paste0("Gene", seq_len(nrow(gwasdataseta)))
+# add random rsid
+gwasdataseta$rsid <- paste0("rs", seq_len(nrow(gwasdataseta)))
+# Save as package data using usethis (run this script interactively)
+if (requireNamespace("usethis", quietly = TRUE)) {
+  usethis::use_data(gwasdataseta, overwrite = TRUE)
+}
+
+# Check structure
+str(gwasdataseta)
+
+# Check if 'gwasdataseta' is available in the package data
+if ("gwasdataseta" %in% data(package = "manhattwin")$results[, "Item"]) {
+  message("gwasdataseta is available in the package data.")
+} else {
+  warning("gwasdataseta is NOT available in the package data.")
+}
+
+
+
+
+
+
+unique(clusterSNPs$cluster)
+
+clusterSNPs
+

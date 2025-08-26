@@ -4,3 +4,15 @@
 .Ruserdata
 .vscode
 .gitignore
+*.png
+*.pdf
+*.Rproj.user
+*.Rhistory
+*.RData
+*.Ruserdata
+*.vscode
+.gitignore
+*.pdf
+*.png
+data/
+sampledata/

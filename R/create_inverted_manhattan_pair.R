@@ -43,7 +43,7 @@
 #' @param output_folder Output folder (default: "Inverted_Manhattan_Plots")
 #' @param file_name_prefix File name prefix (default: "inverted_manhattan")
 #' @param font_family Font family for Unicode support (default: "Arial Unicode MS")
-#'
+#' @export
 #' @return Invisibly returns the combined plot object
 #'
 #' @examples
@@ -51,7 +51,7 @@
 #' # Generate example data
 #' data1 <- generate_random_gwas_data(n_snps = 5000, seed = 123)
 #' data2 <- generate_random_gwas_data(n_snps = 5000, seed = 456)
-#' 
+#'
 #' create_inverted_manhattan_pair(
 #'   gwas_data1 = data1,
 #'   gwas_data2 = data2,
@@ -61,7 +61,7 @@
 #' )
 #' }
 
-create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2, 
+create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
                                            chr_col = "CHR",
                                            bp_col = "BP",
                                            p_col = "P",
@@ -85,15 +85,15 @@ create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
                                            output_folder = "Inverted_Manhattan_Plots",
                                            file_name_prefix = "inverted_manhattan",
                                            font_family = "Arial Unicode MS") {
-  
+
   # Convert input data to data.table
   data1 <- data.table::as.data.table(gwas_data1)
   data2 <- data.table::as.data.table(gwas_data2)
-  
+
   # Process both datasets using the same chromosome ordering
   all_chrs <- unique(c(data1[[chr_col]], data2[[chr_col]]))
   all_chrs <- sort(unique(all_chrs))
-  
+
   # Process dataset 1
   processed_data1 <- preprocess_manhattan_data(
     gwas_data = data1,
@@ -105,7 +105,7 @@ create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
     plot_pval_threshold = plot_pval_threshold,
     all_chrs = all_chrs
   )
-  
+
   # Process dataset 2
   processed_data2 <- preprocess_manhattan_data(
     gwas_data = data2,
@@ -117,18 +117,18 @@ create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
     plot_pval_threshold = plot_pval_threshold,
     all_chrs = all_chrs
   )
-  
+
   # Calculate lambda values if not provided
   if (is.null(lambda1)) {
     chisq1 <- stats::qchisq(1 - processed_data1$plot_data$pvalue, 1)
     lambda1 <- round(median(chisq1, na.rm = TRUE) / stats::qchisq(0.5, 1), 4)
   }
-  
+
   if (is.null(lambda2)) {
     chisq2 <- stats::qchisq(1 - processed_data2$plot_data$pvalue, 1)
     lambda2 <- round(median(chisq2, na.rm = TRUE) / stats::qchisq(0.5, 1), 4)
   }
-  
+
   # Generate plot titles with lambda symbol
   title1 <- generate_plot_title(
     plot_title_prefix = plot_title1,
@@ -140,7 +140,7 @@ create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
     gwas_data = data1,
     font_family = font_family
   )
-  
+
   title2 <- generate_plot_title(
     plot_title_prefix = plot_title2,
     n_cases = n_cases2,
@@ -151,7 +151,7 @@ create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
     gwas_data = data2,
     font_family = font_family
   )
-  
+
   # Create the top plot (normal orientation)
   top_plot <- create_single_manhattan(
     plot_data = processed_data1$plot_data,
@@ -169,7 +169,7 @@ create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
     inverted = FALSE,
     font_family = font_family
   )
-  
+
   # Create the bottom plot (inverted orientation)
   bottom_plot <- create_single_manhattan(
     plot_data = processed_data2$plot_data,
@@ -187,19 +187,19 @@ create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
     inverted = TRUE,
     font_family = font_family
   )
-  
+
   # Combine plots
-  combined_plot <- top_plot / bottom_plot + 
+  combined_plot <- top_plot / bottom_plot +
     patchwork::plot_layout(heights = c(1, 1))
-  
+
   # Save plots
   if (!dir.exists(output_folder)) {
     dir.create(output_folder, recursive = TRUE)
   }
-  
+
   file_path_png <- file.path(output_folder, paste0(file_name_prefix, ".png"))
   file_path_pdf <- file.path(output_folder, paste0(file_name_prefix, ".pdf"))
-  
+
   # Load fonts if available
   if (requireNamespace("extrafont", quietly = TRUE)) {
     tryCatch({
@@ -208,14 +208,14 @@ create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
       message("Could not load fonts. Using default fonts.")
     })
   }
-  
+
   # Save with Cairo devices for better Unicode support
   tryCatch({
     # Save PNG with Cairo
     grDevices::png(filename = file_path_png, width = 18, height = 12, units = "in", res = 300, type = "cairo", bg = "white")
     print(combined_plot)
     grDevices::dev.off()
-    
+
     # Save PDF with Cairo
     grDevices::cairo_pdf(filename = file_path_pdf, width = 18, height = 12)
     print(combined_plot)
@@ -226,13 +226,13 @@ create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
     ggplot2::ggsave(file_path_png, plot = combined_plot, device = ragg::agg_png, width = 18, height = 12, units = "in", res = 300, bg = "white")
     ggplot2::ggsave(file_path_pdf, plot = combined_plot, device = "pdf", width = 18, height = 12, units = "in")
   })
-  
+
   message(paste("Successfully saved plots to:", file_path_png, "and", file_path_pdf))
   return(invisible(combined_plot))
 }
 
 #' Helper function to preprocess GWAS data
-#' 
+#'
 #' @param gwas_data GWAS data
 #' @param chr_col Chromosome column name
 #' @param bp_col Base pair column name
@@ -244,36 +244,36 @@ create_inverted_manhattan_pair <- function(gwas_data1, gwas_data2,
 #'
 #' @return List with processed plot data and axis data
 
-preprocess_manhattan_data <- function(gwas_data, chr_col, bp_col, p_col, gene_col, 
+preprocess_manhattan_data <- function(gwas_data, chr_col, bp_col, p_col, gene_col,
                                       group_col, plot_pval_threshold, all_chrs) {
-  
+
   # Filter data
   plot_data <- gwas_data[!is.na(get(p_col)) & get(p_col) > 0 & get(p_col) <= plot_pval_threshold]
-  
+
   # Process data
-  plot_data[, `:=` (pvalue = as.numeric(get(p_col)), 
-                    CHR = as.character(get(chr_col)), 
+  plot_data[, `:=` (pvalue = as.numeric(get(p_col)),
+                    CHR = as.character(get(chr_col)),
                     BP = as.numeric(get(bp_col)))]
   plot_data[, log_p := -log10(pvalue)]
-  
+
   # Prepare chromosome numbering
   plot_data[, CHR_num := as.numeric(factor(CHR, levels = unique(stringr::str_sort(unique(CHR), numeric = TRUE))))]
   plot_data <- plot_data[order(CHR_num, BP)]
-  
+
   # Calculate cumulative positions
   cumulative_summary <- plot_data[, .(max_bp = max(BP)), by = CHR_num]
   cumulative_summary <- cumulative_summary[order(CHR_num)]
   cumulative_summary$bp_add <- c(0, cumsum(cumulative_summary$max_bp[-nrow(cumulative_summary)]))
-  
+
   plot_data <- merge(plot_data, cumulative_summary[, .(CHR_num, bp_add)], by = "CHR_num")
   plot_data[, bp_cum := BP + bp_add]
   axis_data <- plot_data[, .(center = (max(bp_cum) + min(bp_cum)) / 2), by = CHR]
-  
+
   return(list(plot_data = plot_data, axis_data = axis_data))
 }
 
 #' Helper function to create a single Manhattan plot
-#' 
+#'
 #' @param plot_data Processed GWAS data
 #' @param axis_data Axis data for plotting
 #' @param plot_title Plot title
@@ -296,7 +296,7 @@ create_single_manhattan <- function(plot_data, axis_data, plot_title, sig_lines,
                                     gene_label_size, gene_col, group_col,
                                     loci_to_label, genes_to_label, custom_gene_colors,
                                     inverted, font_family = "Arial Unicode MS") {
-  
+
   # Prepare gene labels
   snps_to_label <- data.table::data.table()
   if (!is.null(gene_col) && gene_col %in% names(plot_data)) {
@@ -325,37 +325,37 @@ create_single_manhattan <- function(plot_data, axis_data, plot_title, sig_lines,
       }
     }
   }
-  
+
   # Define transformation functions
   compression_factor <- 0.1
   squish_forward <- function(x) ifelse(x <= y_axis_squish_threshold, x, y_axis_squish_threshold + (x - y_axis_squish_threshold) * compression_factor)
   squish_inverse <- function(x) ifelse(x <= y_axis_squish_threshold, x, (x - y_axis_squish_threshold) / compression_factor + y_axis_squish_threshold)
   squish_trans <- scales::trans_new("squish", squish_forward, squish_inverse)
   x_axis_expansion <- ggplot2::expansion(mult = c(0.015, 0.015))
-  
+
   # Define custom chromosome colors
   custom_chromosome_colors <- c(
     "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b",
     "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#aec7e8", "#ffbb78"
   )
-  
+
   if (inverted) {
     inverted_data <- data.table::copy(plot_data)
     inverted_data[, transformed_log_p := -squish_forward(log_p)]
     desired_breaks <- c(0, 10, 20, 30, 60, 90, 120)
     transformed_breaks <- -squish_forward(desired_breaks)
-    
+
     p <- ggplot2::ggplot(inverted_data) +
       ggplot2::geom_point(ggplot2::aes(x = bp_cum, y = transformed_log_p, color = factor(CHR_num)), alpha = 0.8, size = 1.5) +
       ggplot2::scale_color_manual(values = rep(custom_chromosome_colors, 2), guide = "none") +
       ggplot2::geom_hline(yintercept = -squish_forward(-log10(sig_lines)), color = names(sig_lines), linetype = "dashed", linewidth = 0.8) +
       ggplot2::scale_x_continuous(label = axis_data$CHR, breaks = axis_data$center, expand = x_axis_expansion) +
       ggplot2::scale_y_continuous(breaks = transformed_breaks, labels = as.character(desired_breaks), position = "left") +
-      ggplot2::labs(x = "Chromosome", y = expression(-log[10](italic(P))), caption = plot_title) + 
+      ggplot2::labs(x = "Chromosome", y = expression(-log[10](italic(P))), caption = plot_title) +
       ggplot2::theme_minimal(base_size = 14) +
       ggplot2::theme(
         text = ggplot2::element_text(family = font_family),
-        panel.grid.major.x = ggplot2::element_blank(), 
+        panel.grid.major.x = ggplot2::element_blank(),
         panel.grid.minor.x = ggplot2::element_blank(),
         axis.text.x = ggplot2::element_text(color = "black"),
         axis.title.x = ggplot2::element_text(color = "black", face = "bold"),
@@ -364,7 +364,7 @@ create_single_manhattan <- function(plot_data, axis_data, plot_title, sig_lines,
         axis.title.y = ggplot2::element_text(angle = 90, vjust = 0.5, color = "black", face = "bold"),
         plot.margin = ggplot2::margin(t = -15, r = 5.5, b = 5.5, l = 5.5, unit = "pt")
       )
-    
+
     if (nrow(snps_to_label) > 0) {
       inverted_snps_to_label <- data.table::copy(snps_to_label)
       inverted_snps_to_label[, transformed_log_p := -squish_forward(log_p)]
@@ -378,7 +378,7 @@ create_single_manhattan <- function(plot_data, axis_data, plot_title, sig_lines,
           segment.linetype = "dashed", min.segment.length = 0, max.overlaps = Inf
         ) + ggplot2::scale_color_identity(guide = "none")
     }
-    
+
   } else {
     # Create the normal (top) plot
     p <- ggplot2::ggplot(plot_data) +
@@ -392,7 +392,7 @@ create_single_manhattan <- function(plot_data, axis_data, plot_title, sig_lines,
       ggplot2::theme(
         text = ggplot2::element_text(family = font_family),
         plot.title = ggplot2::element_text(hjust = 0.5, size = 16, face = "bold", color = "black"),
-        panel.grid.major.x = ggplot2::element_blank(), 
+        panel.grid.major.x = ggplot2::element_blank(),
         panel.grid.minor.x = ggplot2::element_blank(),
         axis.text.y = ggplot2::element_text(color = "black"),
         axis.title.y = ggplot2::element_text(color = "black", face = "bold"),
@@ -400,7 +400,7 @@ create_single_manhattan <- function(plot_data, axis_data, plot_title, sig_lines,
         axis.ticks.x = ggplot2::element_blank(),
         plot.margin = ggplot2::margin(t = 5.5, r = 5.5, b = -15, l = 5.5, unit = "pt")
       )
-    
+
     if (nrow(snps_to_label) > 0) {
       p <- p +
         ggnewscale::new_scale_color() +
@@ -413,7 +413,7 @@ create_single_manhattan <- function(plot_data, axis_data, plot_title, sig_lines,
         ) + ggplot2::scale_color_identity(guide = "none")
     }
   }
-  
+
   return(p)
 }
 
@@ -433,22 +433,23 @@ create_single_manhattan <- function(plot_data, axis_data, plot_title, sig_lines,
 generate_plot_title <- function(plot_title_prefix, n_cases, n_controls, lambda,
                                 total_snps_in_study, add_date_to_title, gwas_data,
                                 font_family = "Arial Unicode MS") {
-  
-  if (is.null(total_snps_in_study)) { 
+
+  if (is.null(total_snps_in_study)) {
     snps_for_title <- format(nrow(gwas_data), big.mark = ",", scientific = FALSE)
-    snps_title_label <- "Total SNPs" 
-  } else { 
+    snps_title_label <- "Total SNPs"
+  } else {
     snps_for_title <- format(total_snps_in_study, big.mark = ",", scientific = FALSE)
-    snps_title_label <- "Total SNPs in Study" 
+    snps_title_label <- "Total SNPs in Study"
   }
-  
-  title_string <- sprintf("%s\n(%s: %s | λ = %s | Cases: %s, Controls: %s)", 
-                         plot_title_prefix, snps_title_label, snps_for_title, 
+
+  title_string <- sprintf("%s\n(%s: %s | λ = %s | Cases: %s, Controls: %s)",
+                         plot_title_prefix, snps_title_label, snps_for_title,
                          lambda, n_cases, n_controls)
-  
-  if (add_date_to_title) { 
-    title_string <- paste0(title_string, " | ", Sys.Date()) 
+
+  if (add_date_to_title) {
+    title_string <- paste0(title_string, " | ", Sys.Date())
   }
-  
+
   return(title_string)
 }
+
